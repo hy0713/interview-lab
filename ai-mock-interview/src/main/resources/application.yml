@@ -1,0 +1,60 @@
+server:
+  port: ${SERVER_PORT:8080}
+spring:
+  application:
+    name: interview-lab
+  datasource:
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3307/ai_interview_v2?useUnicode=true&characterEncoding=utf8&connectionTimeZone=%2B08:00&forceConnectionTimeZoneToSession=true}
+    username: ${MYSQL_USER:interview}
+    password: ${MYSQL_PASSWORD:interview_dev}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6380}
+      timeout: 3s
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5673}
+    username: ${RABBITMQ_USER:interview}
+    password: ${RABBITMQ_PASSWORD:interview_dev}
+    listener:
+      simple:
+        concurrency: 2
+        max-concurrency: 2
+        prefetch: 1
+        default-requeue-rejected: false
+  ai:
+    deepseek:
+      api-key: ${DEEPSEEK_API_KEY:not-configured}
+      base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com}
+      chat:
+        options:
+          model: ${DEEPSEEK_MODEL:deepseek-flash}
+          temperature: 0.5
+          max-tokens: 4096
+    retry:
+      max-attempts: 2
+      backoff:
+        initial-interval: 1s
+        max-interval: 3s
+  http:
+    client:
+      connect-timeout: 10s
+      read-timeout: 120s
+  jackson:
+    time-zone: Asia/Shanghai
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+app:
+  jwt-secret: ${JWT_SECRET:interview-lab-local-development-key-change-me-2026}
+  token-hours: 12
+  invite-code: ${INTERVIEWER_INVITE_CODE:interview-lab}
+  demo-data: ${DEMO_DATA:true}
+  scheduling-enabled: true
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

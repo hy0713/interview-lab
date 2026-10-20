@@ -1,0 +1,5 @@
+target/*
+!target/ai-mock-interview-2.0.0.jar
+.git
+.env
+*.log

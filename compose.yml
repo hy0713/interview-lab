@@ -1,0 +1,70 @@
+name: interview-lab
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: ai_interview_v2
+      MYSQL_USER: interview
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-interview_dev}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_dev_only}
+    ports: ["127.0.0.1:3307:3306"]
+    volumes: [mysql-data:/var/lib/mysql]
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports: ["127.0.0.1:6380:6379"]
+    volumes: [redis-data:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: interview
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-interview_dev}
+    ports: ["127.0.0.1:5673:5672", "127.0.0.1:15673:15672"]
+    volumes: [rabbit-data:/var/lib/rabbitmq]
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+  backend:
+    build: ./ai-mock-interview
+    environment:
+      MYSQL_URL: jdbc:mysql://mysql:3306/ai_interview_v2?useUnicode=true&characterEncoding=utf8&connectionTimeZone=%2B08:00&forceConnectionTimeZoneToSession=true
+      MYSQL_USER: interview
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-interview_dev}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: interview
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-interview_dev}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-not-configured}
+      DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek-flash}
+      DEEPSEEK_BASE_URL: ${DEEPSEEK_BASE_URL:-https://api.deepseek.com}
+      JWT_SECRET: ${JWT_SECRET:-interview-lab-local-development-key-change-me-2026}
+      INTERVIEWER_INVITE_CODE: ${INTERVIEWER_INVITE_CODE:-interview-lab}
+      DEMO_DATA: ${DEMO_DATA:-true}
+      TZ: Asia/Shanghai
+    ports: ["127.0.0.1:${BACKEND_PORT:-8080}:8080"]
+    depends_on:
+      mysql: {condition: service_healthy}
+      redis: {condition: service_healthy}
+      rabbitmq: {condition: service_healthy}
+  frontend:
+    build: ./ai-mock-interview-frontend
+    ports: ["127.0.0.1:3000:80"]
+    depends_on: [backend]
+volumes:
+  mysql-data:
+  redis-data:
+  rabbit-data:

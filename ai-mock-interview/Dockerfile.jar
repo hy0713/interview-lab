@@ -1,0 +1,7 @@
+# 使用本地 Maven 已打包的 JAR，适合构建镜像网络受限的开发环境。
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+COPY target/ai-mock-interview-2.0.0.jar app.jar
+USER 10001:10001
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -1,0 +1,5 @@
+services:
+  backend:
+    build:
+      context: ./ai-mock-interview
+      dockerfile: Dockerfile.jar
